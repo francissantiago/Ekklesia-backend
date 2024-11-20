@@ -6,7 +6,6 @@ import os
 # Carregar variáveis de ambiente do .env
 load_dotenv()
 
-
 class Database:
     def __init__(self, host, user, password, db, port=3306):
         self.host = host
