@@ -1,9 +1,11 @@
-import aiomysql
+import asyncmy
+from asyncmy.cursors import DictCursor
 from dotenv import load_dotenv
 import os
 
 # Carregar variáveis de ambiente do .env
 load_dotenv()
+
 
 class Database:
     def __init__(self, host, user, password, db, port=3306):
@@ -15,39 +17,47 @@ class Database:
         self.pool = None
 
     async def connect(self):
-        self.pool = await aiomysql.create_pool(
+        # Criar pool de conexões usando asyncmy
+        self.pool = await asyncmy.create_pool(
             host=self.host,
             user=self.user,
             password=self.password,
             db=self.db,
             port=self.port,
+            minsize=1,
+            maxsize=5,
             autocommit=True,
         )
 
     async def disconnect(self):
+        # Fechar pool de conexões
         if self.pool:
             self.pool.close()
             await self.pool.wait_closed()
 
     async def execute(self, query, values=None):
+        # Executar comando de escrita
         async with self.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute(query, values)
                 await conn.commit()
 
     async def fetch_all(self, query, values=None):
+        # Buscar múltiplos registros
         async with self.pool.acquire() as conn:
-            async with conn.cursor(aiomysql.DictCursor) as cur:
+            async with conn.cursor(cursor=DictCursor) as cur:
                 await cur.execute(query, values)
                 return await cur.fetchall()
 
     async def fetch_one(self, query, values=None):
+        # Buscar um único registro
         async with self.pool.acquire() as conn:
-            async with conn.cursor(aiomysql.DictCursor) as cur:
+            async with conn.cursor(cursor=DictCursor) as cur:
                 await cur.execute(query, values)
                 return await cur.fetchone()
 
-# Criar instâncias para leitura e escrita
+
+# Criar instâncias para leitura e escrita com variáveis de ambiente
 read_db = Database(
     host=os.getenv("DB_READ_HOST"),
     user=os.getenv("DB_READ_USER"),
