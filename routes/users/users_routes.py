@@ -7,10 +7,29 @@ from config.database import write_db
 
 router = APIRouter()
 
+#########################
+#### CRIPTOGRAFIA
+#########################
+# Contexto de criptografia
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# Função para hash de senha
+def hash_password(password: str) -> str:
+    return pwd_context.hash(password)
+
+#########################
+#### MODELOS
+#########################
+# Modelo de criação de usuário
+class UserCreate(BaseModel):
+    user_email: EmailStr
+    user_password: str = Field(..., min_length=8, max_length=128)
+
+#########################
+#### ROTAS DE USUÁRIO
+#########################
 @router.get("/users", dependencies=[Depends(validate_api_key)])
-#########################
-#### SELECIONA TODOS OS USUÁRIOS
-#########################
+# Seleciona todos os usuários
 async def get_users():
     query = "SELECT * FROM users_auth"
     users = await read_db.fetch_all(query)
@@ -18,21 +37,7 @@ async def get_users():
         raise HTTPException(status_code=404, detail="Nenhum usuário encontrado.")
     return users
 
-#########################
-#### CRIA UM NOVO USUÁRIO
-#########################
-# Contexto de criptografia
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-# Modelo de entrada para validação
-class UserCreate(BaseModel):
-    user_email: EmailStr
-    user_password: str = Field(..., min_length=8, max_length=128)
-
-# Função para hash de senha
-def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
-
-# Rota para criar um novo usuário
+# Criar um novo usuário
 @router.post("/create_user", status_code=201)
 async def create_user(user: UserCreate):
     # Hash da senha
