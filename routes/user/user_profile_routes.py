@@ -6,6 +6,8 @@ from config.database import read_db
 from config.database import write_db
 
 router = APIRouter()
+
+
 #########################
 #### MODELOS
 #########################
@@ -33,6 +35,7 @@ class UserProfileBase(BaseModel):
     )
     user_profile_photo: Optional[str] = Field(None, max_length=255)
 
+
 # Modelo de atualização de perfil
 class UserProfileUpdate(BaseModel):
     user_profile_name: str = Field(..., max_length=255)
@@ -56,6 +59,7 @@ class UserProfileUpdate(BaseModel):
     )
     user_profile_photo: Optional[str] = Field(None, max_length=255)
 
+
 class UserProfileCreate(UserProfileBase):
     pass
 
@@ -63,20 +67,24 @@ class UserProfileCreate(UserProfileBase):
 class UserProfileUpdate(UserProfileUpdate):
     pass
 
+
 #########################
 #### ROTAS DE PERFIL
 #########################
-# Seleciona todos os perfis
-@router.get("/profiles", dependencies=[Depends(validate_api_key)])
-async def get_profiles():
-    query = "SELECT * FROM users_profile"
-    users = await read_db.fetch_all(query)
-    if not users:
-        raise HTTPException(status_code=404, detail="Nenhum perfil encontrado.")
-    return users
+# Seleciona um perfil por usuário
+@router.get("/profile/{user_id}", dependencies=[Depends(validate_api_key)])
+async def get_profile_by_user_id(user_id: int):
+    query = "SELECT * FROM users_profile WHERE user_profile_user_id = %s"
+    record = await read_db.fetch_one(query, [user_id])
+    if not record:
+        raise HTTPException(
+            status_code=404, detail="Registro de perfil não encontrado."
+        )
+    return record
+
 
 # Cria um novo perfil de usuário
-@router.post("/create_profile", status_code=201, dependencies=[Depends(validate_api_key)])
+@router.post("/profile/create", status_code=201, dependencies=[Depends(validate_api_key)])
 async def create_profile(profile: UserProfileCreate):
     """Cria um novo perfil de usuário."""
     query_insert = """
@@ -112,9 +120,10 @@ async def create_profile(profile: UserProfileCreate):
 
     return {"message": "Perfil criado com sucesso."}
 
+
 # Atualiza um perfil de usuário
 @router.put(
-    "/edit_profile/{profile_id}", status_code=200, dependencies=[Depends(validate_api_key)]
+    "/profile/edit/{profile_id}", status_code=200, dependencies=[Depends(validate_api_key)]
 )
 async def update_profile(profile_id: int, profile: UserProfileUpdate):
     """Atualiza um perfil de usuário."""
@@ -161,9 +170,10 @@ async def update_profile(profile_id: int, profile: UserProfileUpdate):
 
     return {"message": "Perfil atualizado com sucesso."}
 
+
 # Remove um perfil de usuário.
 @router.delete(
-    "/delete_profile/{profile_id}", status_code=200, dependencies=[Depends(validate_api_key)]
+    "/profile/delete/{profile_id}", status_code=200, dependencies=[Depends(validate_api_key)]
 )
 async def delete_profile(profile_id: int):
     """Remove um perfil de usuário."""

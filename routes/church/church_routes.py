@@ -48,22 +48,21 @@ class ChurchUpdate(BaseModel):
 #########################
 #### ROTAS DE IGREJAS
 #########################
-
-# Seleciona todas as igrejas
-@router.get("/churches", dependencies=[Depends(validate_api_key)])
-async def get_churches():
-    query = "SELECT * FROM churchs"
-    churches = await read_db.fetch_all(query)
-    if not churches:
-        raise HTTPException(status_code=404, detail="Nenhuma igreja encontrada.")
-    return churches
+# Seleciona um registro de igreja por id
+@router.get("/church/{church_id}", dependencies=[Depends(validate_api_key)])
+async def get_church_by_church_id(church_id: int):
+    query = "SELECT * FROM churches WHERE church_id = %s"
+    record = await read_db.fetch_one(query, [church_id])
+    if not record:
+        raise HTTPException(status_code=404, detail="Registro de igreja não encontrado.")
+    return record
 
 # Cria uma nova igreja
 @router.post("/create_church", status_code=201, dependencies=[Depends(validate_api_key)])
 async def create_church(church: ChurchCreate):
     """Cria uma nova igreja."""
     query_insert = """
-    INSERT INTO churchs (
+    INSERT INTO churches (
         church_name, church_headquarters_id, church_address, church_address_number,
         church_complement, church_district, church_postal_code, church_city, church_state,
         church_country, church_status
@@ -106,7 +105,7 @@ async def update_church(church_id: int, church: ChurchUpdate):
         raise HTTPException(status_code=400, detail="Nenhum campo para atualizar.")
 
     query_update = f"""
-    UPDATE churchs
+    UPDATE churches
     SET {', '.join(fields)}, church_updated_at = CURRENT_TIMESTAMP
     WHERE church_id = %s
     """
@@ -125,7 +124,7 @@ async def update_church(church_id: int, church: ChurchUpdate):
 @router.delete("/delete_church/{church_id}", status_code=200, dependencies=[Depends(validate_api_key)])
 async def delete_church(church_id: int):
     """Remove uma igreja."""
-    query_delete = "DELETE FROM churchs WHERE church_id = %s"
+    query_delete = "DELETE FROM churches WHERE church_id = %s"
     try:
         result = await write_db.execute(query_delete, [church_id])
         if result == 0:

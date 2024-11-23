@@ -28,17 +28,8 @@ class UserCreate(BaseModel):
 #########################
 #### ROTAS DE USUÁRIO
 #########################
-@router.get("/users", dependencies=[Depends(validate_api_key)])
-# Seleciona todos os usuários
-async def get_users():
-    query = "SELECT * FROM users_auth"
-    users = await read_db.fetch_all(query)
-    if not users:
-        raise HTTPException(status_code=404, detail="Nenhum usuário encontrado.")
-    return users
-
 # Criar um novo usuário
-@router.post("/create_user", status_code=201)
+@router.post("/create", status_code=201)
 async def create_user(user: UserCreate):
     # Hash da senha
     hashed_password = hash_password(user.user_password)

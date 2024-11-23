@@ -21,17 +21,8 @@ class TwoFactorAuthUpdate(BaseModel):
 #########################
 #### ROTAS DE 2FA
 #########################
-# Seleciona todos os registros 2FA
-@router.get("/2fa", dependencies=[Depends(validate_api_key)])
-async def get_all_2fa():
-    query = "SELECT * FROM users_2fa"
-    records = await read_db.fetch_all(query)
-    if not records:
-        raise HTTPException(status_code=404, detail="Nenhum registro encontrado.")
-    return records
-
 # Seleciona um registro de 2FA por usuário
-@router.get("/2fa/user/{user_id}", dependencies=[Depends(validate_api_key)])
+@router.get("/2fa/{user_id}", dependencies=[Depends(validate_api_key)])
 async def get_2fa_by_user_id(user_id: int):
     query = "SELECT * FROM users_2fa WHERE user_2fa_user_id = %s"
     record = await read_db.fetch_one(query, [user_id])
@@ -40,7 +31,7 @@ async def get_2fa_by_user_id(user_id: int):
     return record
 
 # Cria um registro de 2FA
-@router.post("/2fa/create_2fa", status_code=201, dependencies=[Depends(validate_api_key)])
+@router.post("/2fa/create", status_code=201, dependencies=[Depends(validate_api_key)])
 async def create_2fa(data: TwoFactorAuthBase):
     query_insert = """
     INSERT INTO users_2fa (user_2fa_user_id, user_2fa_enabled, user_2fa_recovery_code)
@@ -57,7 +48,7 @@ async def create_2fa(data: TwoFactorAuthBase):
     return {"message": "Registro de 2FA criado com sucesso."}
 
 # Atualiza um registro de 2FA
-@router.put("/2fa/update_2fa/user/{user_id}", status_code=200, dependencies=[Depends(validate_api_key)])
+@router.put("/2fa/update/{user_id}", status_code=200, dependencies=[Depends(validate_api_key)])
 async def update_2fa(user_id: int, data: TwoFactorAuthUpdate):
     query_update = """
     UPDATE users_2fa
@@ -78,7 +69,7 @@ async def update_2fa(user_id: int, data: TwoFactorAuthUpdate):
     return {"message": "Registro de 2FA atualizado com sucesso."}
 
 # Remove um registro de 2FA
-@router.delete("/2fa/delete_2fa/user/{user_id}", status_code=200, dependencies=[Depends(validate_api_key)])
+@router.delete("/2fa/delete/{user_id}", status_code=200, dependencies=[Depends(validate_api_key)])
 async def delete_2fa(user_id: int):
     query_delete = "DELETE FROM users_2fa WHERE user_2fa_user_id = %s"
     try:

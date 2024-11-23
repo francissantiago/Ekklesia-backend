@@ -29,7 +29,7 @@ class UserPermissionUpdate(BaseModel):
 #### ROTAS DE PERMISSÕES
 #########################
 # Obter todas as permissões
-@router.get("/list_all", dependencies=[Depends(validate_api_key)])
+@router.get("/permissions/list_all", dependencies=[Depends(validate_api_key)])
 async def get_permissions():
     """Obtém todas as permissões de usuários."""
     query = "SELECT * FROM users_permissions"
@@ -39,7 +39,7 @@ async def get_permissions():
     return permissions
 
 # Criar uma nova permissão
-@router.post("/create", status_code=201, dependencies=[Depends(validate_api_key)])
+@router.post("/permissions/create", status_code=201, dependencies=[Depends(validate_api_key)])
 async def create_permission(permission: UserPermissionCreate):
     """Cria uma nova permissão de usuário."""
     query_insert = """
@@ -62,7 +62,7 @@ async def create_permission(permission: UserPermissionCreate):
     return {"message": "Permissão criada com sucesso."}
 
 # Atualizar uma permissão existente
-@router.put("/edit/{permission_id}", dependencies=[Depends(validate_api_key)])
+@router.put("/permissions/edit/{permission_id}", dependencies=[Depends(validate_api_key)])
 async def update_permission(permission_id: int, permission: UserPermissionUpdate):
     """Atualiza uma permissão de usuário."""
     updates = []
@@ -99,7 +99,7 @@ async def update_permission(permission_id: int, permission: UserPermissionUpdate
     return {"message": "Permissão atualizada com sucesso."}
 
 # Remover uma permissão
-@router.delete("/delete/{permission_id}", dependencies=[Depends(validate_api_key)])
+@router.delete("/permissions/delete/{permission_id}", dependencies=[Depends(validate_api_key)])
 async def delete_permission(permission_id: int):
     """Remove uma permissão de usuário."""
     query_delete = "DELETE FROM users_permissions WHERE user_permissions_id = %s"
