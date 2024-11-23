@@ -49,7 +49,7 @@ class ChurchUpdate(BaseModel):
 #### ROTAS DE IGREJAS
 #########################
 # Seleciona um registro de igreja por id
-@router.get("/church/{church_id}", dependencies=[Depends(validate_api_key)])
+@router.get("/{church_id}", dependencies=[Depends(validate_api_key)])
 async def get_church_by_church_id(church_id: int):
     query = "SELECT * FROM churches WHERE church_id = %s"
     record = await read_db.fetch_one(query, [church_id])
