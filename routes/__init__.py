@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from .auth.api_key_routes import router as api_key_routes # Rotas de chaves de API
 from .users.users_routes import router as users_router # Rotas de Usuário
+from .users.user_permissions_routes import router as user_permissions_routes # Rotas de Permissões Usuário
 from .users.users_profile_routes import router as users_profile_routes # Rotas de Perfil Usuário
 from .users.users_2fa_routes import router as users_2fa_routes # Rotas de 2FA
 from .churchs.churchs_routs import router as churchs_routs # Rotas de Igrejas
@@ -13,6 +14,9 @@ router.include_router(api_key_routes, prefix="/auth", tags=["api_auth"])
 
 # Rotas de Usuário
 router.include_router(users_router, prefix="/users", tags=["users"])
+
+# Rotas de Permissões Usuário
+router.include_router(user_permissions_routes, prefix="/users/permissions", tags=["users_permissions"])
 
 # Rotas de Perfil de Usuário
 router.include_router(users_profile_routes, prefix="/user_profiles", tags=["user_profiles"])
